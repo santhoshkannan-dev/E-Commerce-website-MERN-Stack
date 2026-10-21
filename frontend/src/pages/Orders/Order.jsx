@@ -9,7 +9,7 @@ import {
   useGetOrderDetailsQuery,
   usePayOrderMutation,
 } from "../../redux/api/orderApiSlice";
-import { FaCheckCircle, FaReceipt } from "react-icons/fa";
+import { FaCheckCircle, FaReceipt, FaTruck, FaClock, FaShieldAlt } from "react-icons/fa";
 
 const Order = () => {
   const { id: orderId } = useParams();
@@ -37,183 +37,217 @@ const Order = () => {
   };
 
   const deliverHandler = async () => {
-    await deliverOrder(orderId);
-    refetch();
+    try {
+      await deliverOrder(orderId);
+      refetch();
+      toast.success("Order marked as delivered");
+    } catch (err) {
+      toast.error(err?.data?.message || err.message || "Failed to update delivery status");
+    }
   };
 
   return isLoading ? (
-    <Loader />
+    <div className="min-h-screen bg-forest-950 flex items-center justify-center">
+      <Loader />
+    </div>
   ) : error ? (
-    <Messsage variant="danger">{error?.data?.message || "Order not found"}</Messsage>
+    <div className="min-h-screen bg-forest-950 p-8 flex items-center justify-center">
+      <Messsage variant="danger">{error?.data?.message || "Order not found"}</Messsage>
+    </div>
   ) : (
-    <div className="container flex flex-col ml-[10rem] md:flex-row pb-12">
-      <div className="md:w-2/3 pr-6">
-        <div className="border border-zinc-800 rounded-2xl p-5 mt-5 pb-4 mb-5 bg-zinc-900/40">
-          <h2 className="text-xl font-bold mb-4 text-white">Order Items ({order.orderItems.length})</h2>
-
-          {order.orderItems.length === 0 ? (
-            <Messsage>Order is empty</Messsage>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="border-b border-zinc-800 text-xs uppercase text-zinc-400">
-                  <tr>
-                    <th className="p-3">Product</th>
-                    <th className="p-3 text-center">Qty</th>
-                    <th className="p-3 text-right">Unit Price</th>
-                    <th className="p-3 text-right">Total</th>
-                  </tr>
-                </thead>
-
-                <tbody className="divide-y divide-zinc-800/60">
-                  {order.orderItems.map((item, index) => (
-                    <tr key={index} className="hover:bg-zinc-800/20 transition-colors">
-                      <td className="p-3 flex items-center space-x-3">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-14 h-14 object-cover rounded-lg border border-zinc-700/50"
-                        />
-                        <Link
-                          to={`/product/${item.product}`}
-                          className="font-medium text-white hover:text-pink-400 transition-colors"
-                        >
-                          {item.name}
-                        </Link>
-                      </td>
-
-                      <td className="p-3 text-center text-zinc-300 font-mono">{item.qty}</td>
-                      <td className="p-3 text-right text-zinc-300 font-mono">$ {item.price}</td>
-                      <td className="p-3 text-right font-bold text-white font-mono">
-                        $ {(item.qty * item.price).toFixed(2)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+    <div className="min-h-screen bg-forest-950 text-stone-200 py-10 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-6xl mx-auto">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between pb-6 mb-8 border-b border-emerald-900/30 gap-4">
+          <div>
+            <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1">
+              <span>Order Confirmed</span>
+              <span>•</span>
+              <span className="font-mono text-stone-400">ID: #{order._id}</span>
             </div>
-          )}
-        </div>
-      </div>
-
-      <div className="md:w-1/3 space-y-6">
-        {/* Shipping & Payment Method Box */}
-        <div className="mt-5 border border-zinc-800 rounded-2xl p-5 bg-zinc-900/40">
-          <h2 className="text-lg font-bold text-white border-b border-zinc-800 pb-3 mb-4">
-            Shipping Information
-          </h2>
-
-          <div className="text-sm space-y-2.5">
-            <p>
-              <span className="text-zinc-400">Order ID: </span>
-              <span className="font-mono text-zinc-200">{order._id}</span>
-            </p>
-            <p>
-              <span className="text-zinc-400">Recipient: </span>
-              <span className="font-semibold text-white">{order.user?.username}</span>
-            </p>
-            <p>
-              <span className="text-zinc-400">Email: </span>
-              <span className="text-zinc-300">{order.user?.email}</span>
-            </p>
-            <p>
-              <span className="text-zinc-400">Address: </span>
-              <span className="text-zinc-300">
-                {order.shippingAddress.address}, {order.shippingAddress.city}{" "}
-                {order.shippingAddress.postalCode}, {order.shippingAddress.country}
-              </span>
-            </p>
-            <p>
-              <span className="text-zinc-400">Payment Method: </span>
-              <span className="text-pink-400 font-semibold">{order.paymentMethod}</span>
-            </p>
+            <h1 className="font-serif text-2xl sm:text-3xl text-stone-100 font-bold">
+              Invoice & Fulfillment
+            </h1>
           </div>
 
-          <div className="mt-4 pt-3 border-t border-zinc-800">
+          <div className="flex items-center space-x-3">
             {order.isPaid ? (
-              <div className="p-3 rounded-xl bg-emerald-950/50 border border-emerald-800/60 flex items-start space-x-3">
-                <FaCheckCircle className="text-emerald-400 text-lg mt-0.5" />
-                <div>
-                  <div className="font-bold text-emerald-300 text-sm">Payment Confirmed</div>
-                  <div className="text-xs text-emerald-400/80 font-mono mt-0.5">
-                    {order.paidAt ? new Date(order.paidAt).toLocaleString() : "Paid"}
-                  </div>
-                  {order.paymentResult?.id && (
-                    <div className="text-[11px] text-zinc-400 font-mono mt-1">
-                      Txn: {order.paymentResult.id}
-                    </div>
-                  )}
-                </div>
-              </div>
+              <span className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/70 text-emerald-400 border border-emerald-800/60">
+                <FaCheckCircle className="text-xs" />
+                <span>Paid & Verified</span>
+              </span>
             ) : (
-              <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-800/60 text-amber-300 text-sm font-semibold flex items-center space-x-2">
-                <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping inline-block"></span>
-                <span>Awaiting Payment</span>
-              </div>
+              <span className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-amber-950/70 text-amber-300 border border-amber-800/60">
+                <FaClock className="text-xs" />
+                <span>Payment Pending</span>
+              </span>
+            )}
+
+            {order.isDelivered ? (
+              <span className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-teal-950/70 text-teal-400 border border-teal-800/60">
+                <FaTruck className="text-xs" />
+                <span>Delivered</span>
+              </span>
+            ) : (
+              <span className="inline-flex items-center space-x-1.5 px-3.5 py-1.5 rounded-full text-xs font-semibold bg-forest-900/80 text-stone-400 border border-emerald-900/40">
+                <span>In Transit / Prep</span>
+              </span>
             )}
           </div>
         </div>
 
-        {/* Order Summary Box */}
-        <div className="border border-zinc-800 rounded-2xl p-5 bg-zinc-900/40">
-          <h2 className="text-lg font-bold text-white border-b border-zinc-800 pb-3 mb-4 flex items-center justify-between">
-            <span>Order Summary</span>
-            <FaReceipt className="text-pink-500 text-sm" />
-          </h2>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Main Column: Items (8 cols) */}
+          <div className="lg:col-span-8 space-y-6">
+            <div className="glass-panel rounded-3xl border border-emerald-900/30 overflow-hidden shadow-xl">
+              <div className="px-6 py-4 border-b border-emerald-900/30 bg-forest-900/40">
+                <h2 className="text-sm font-semibold tracking-wider uppercase text-stone-300">
+                  Purchased Items ({order.orderItems.length})
+                </h2>
+              </div>
 
-          <div className="space-y-2 text-sm text-zinc-300">
-            <div className="flex justify-between">
-              <span>Items Total</span>
-              <span className="font-mono">$ {order.itemsPrice}</span>
+              <div className="divide-y divide-emerald-900/20">
+                {order.orderItems.map((item, index) => (
+                  <div key={index} className="p-4 sm:p-6 flex items-center justify-between hover:bg-forest-900/30 transition-colors">
+                    <div className="flex items-center space-x-4">
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-emerald-900/40 bg-stone-900"
+                      />
+                      <div>
+                        <Link
+                          to={`/product/${item.product}`}
+                          className="font-medium text-stone-100 hover:text-emerald-400 transition-colors text-sm sm:text-base line-clamp-1"
+                        >
+                          {item.name}
+                        </Link>
+                        <div className="text-xs text-stone-400 mt-1">
+                          Qty: <span className="text-stone-200 font-semibold">{item.qty}</span> × ${Number(item.price).toFixed(2)}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-right">
+                      <div className="font-mono text-base font-bold text-stone-100">
+                        ${(item.qty * item.price).toFixed(2)}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>Shipping Fee</span>
-              <span className="font-mono">$ {order.shippingPrice}</span>
+
+            {/* Delivery Details */}
+            <div className="glass-panel p-6 rounded-3xl border border-emerald-900/30 space-y-4">
+              <h3 className="text-sm font-semibold tracking-wider uppercase text-stone-300 border-b border-emerald-900/30 pb-3">
+                Recipient & Delivery Address
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-stone-300">
+                <div>
+                  <span className="text-stone-500 uppercase tracking-wider block mb-1">Customer</span>
+                  <p className="font-semibold text-stone-100 text-sm">{order.user?.username}</p>
+                  <p className="text-stone-400">{order.user?.email}</p>
+                </div>
+
+                <div>
+                  <span className="text-stone-500 uppercase tracking-wider block mb-1">Shipping Destination</span>
+                  <p className="text-stone-200 text-sm">
+                    {order.shippingAddress.address}
+                  </p>
+                  <p className="text-stone-400">
+                    {order.shippingAddress.city}, {order.shippingAddress.postalCode}, {order.shippingAddress.country}
+                  </p>
+                </div>
+              </div>
             </div>
-            <div className="flex justify-between">
-              <span>Tax</span>
-              <span className="font-mono">$ {order.taxPrice}</span>
+          </div>
+
+          {/* Sidebar: Payment Simulator & Summary (4 cols) */}
+          <div className="lg:col-span-4 space-y-6">
+            {/* Summary Box */}
+            <div className="glass-panel p-6 rounded-3xl border border-emerald-900/30 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-emerald-900/30 pb-4">
+                <h2 className="font-serif text-lg font-bold text-stone-100">
+                  Payment Breakdown
+                </h2>
+                <FaReceipt className="text-emerald-400 text-sm" />
+              </div>
+
+              <div className="space-y-2.5 text-xs text-stone-300">
+                <div className="flex justify-between">
+                  <span>Items Total</span>
+                  <span className="font-mono text-stone-200">${Number(order.itemsPrice).toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Shipping</span>
+                  <span className="font-mono text-stone-200">
+                    {Number(order.shippingPrice) === 0 ? "Free" : `$${Number(order.shippingPrice).toFixed(2)}`}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Tax</span>
+                  <span className="font-mono text-stone-200">${Number(order.taxPrice).toFixed(2)}</span>
+                </div>
+                <div className="pt-3 border-t border-emerald-900/30 flex justify-between items-baseline">
+                  <span className="font-serif text-sm font-bold text-stone-100">Total Charged</span>
+                  <span className="font-mono text-xl font-bold text-emerald-400">
+                    ${Number(order.totalPrice).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              <div className="pt-2 text-[11px] text-stone-400 flex items-center justify-between">
+                <span>Method:</span>
+                <span className="text-stone-200 font-semibold">{order.paymentMethod}</span>
+              </div>
             </div>
-            <div className="flex justify-between pt-2 border-t border-zinc-800 text-base font-bold text-white">
-              <span>Grand Total</span>
-              <span className="text-pink-400 font-mono text-lg">$ {order.totalPrice}</span>
+
+            {/* Payment Section */}
+            {!order.isPaid ? (
+              <div>
+                <DummyPayment
+                  order={order}
+                  onPaySuccess={handlePaySuccess}
+                  isLoading={loadingPay}
+                />
+              </div>
+            ) : (
+              <div className="glass-panel p-6 rounded-3xl border border-emerald-600/40 text-center space-y-3 bg-emerald-950/20">
+                <FaCheckCircle className="text-3xl text-emerald-400 mx-auto" />
+                <h3 className="font-serif text-lg font-bold text-stone-100">Order Confirmed</h3>
+                <p className="text-xs text-stone-300 leading-relaxed">
+                  Thank you for supporting ethical, sustainable kitchenware. Your package is prepared with recycled material.
+                </p>
+                {order.paymentResult?.id && (
+                  <div className="text-[11px] font-mono text-stone-400 pt-2 border-t border-emerald-900/30">
+                    Txn ID: {order.paymentResult.id}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Admin Deliver Button */}
+            {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
+              <div className="glass-panel p-5 rounded-3xl border border-emerald-900/40 space-y-3">
+                <span className="text-xs font-semibold text-emerald-400 uppercase tracking-wider block">Admin Control</span>
+                <button
+                  type="button"
+                  className="w-full py-3 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-lg shadow-emerald-900/50"
+                  onClick={deliverHandler}
+                  disabled={loadingDeliver}
+                >
+                  {loadingDeliver ? "Updating..." : "Mark As Delivered"}
+                </button>
+              </div>
+            )}
+
+            <div className="flex items-center justify-center space-x-2 text-[11px] text-stone-400">
+              <FaShieldAlt className="text-emerald-400" />
+              <span>Certified Sustainable & Carbon-Neutral</span>
             </div>
           </div>
         </div>
-
-        {/* Payment Simulator Section */}
-        {!order.isPaid ? (
-          <div>
-            {loadingPay && <Loader />}
-            <DummyPayment
-              order={order}
-              onPaySuccess={handlePaySuccess}
-              isLoading={loadingPay}
-            />
-          </div>
-        ) : (
-          <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-950/60 to-zinc-900 border border-emerald-700/50 text-center space-y-2">
-            <FaCheckCircle className="text-3xl text-emerald-400 mx-auto" />
-            <h3 className="font-bold text-white">Order Successfully Paid</h3>
-            <p className="text-xs text-zinc-400">
-              Your simulated payment was processed and verified. Thank you for shopping with us!
-            </p>
-          </div>
-        )}
-
-        {/* Admin Deliver Button */}
-        {loadingDeliver && <Loader />}
-        {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
-          <div>
-            <button
-              type="button"
-              className="bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold w-full py-3 rounded-xl transition-all shadow-lg shadow-pink-500/25"
-              onClick={deliverHandler}
-            >
-              Mark As Delivered
-            </button>
-          </div>
-        )}
       </div>
     </div>
   );

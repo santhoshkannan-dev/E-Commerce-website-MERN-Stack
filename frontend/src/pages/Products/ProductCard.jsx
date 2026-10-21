@@ -1,84 +1,71 @@
 import { Link } from "react-router-dom";
-import { AiOutlineShoppingCart } from "react-icons/ai";
+import { AiOutlinePlus } from "react-icons/ai";
 import { useDispatch } from "react-redux";
 import { addToCart } from "../../redux/features/cart/cartSlice";
 import { toast } from "react-toastify";
 import HeartIcon from "./HeartIcon";
 
-const ProductCard = ({ p }) => {
+const ProductCard = ({ p, badge = "Customer favorite" }) => {
   const dispatch = useDispatch();
 
-  const addToCartHandler = (product, qty) => {
-    dispatch(addToCart({ ...product, qty }));
-    toast.success("Item added successfully", {
-      position: toast.POSITION.TOP_RIGHT,
-      autoClose: 2000,
-    });
+  const addToCartHandler = (e, product) => {
+    e.preventDefault();
+    e.stopPropagation();
+    dispatch(addToCart({ ...product, qty: 1 }));
+    toast.success(`${product.name} added to cart!`);
   };
 
   return (
-    <div className="max-w-sm relative bg-[#1A1A1A] rounded-lg shaodw dark:bg-gray-800 dark:border-gray-700">
-      <section className="relative">
-        <Link to={`/product/${p._id}`}>
-          <span className="absolute bottom-3 right-3 bg-pink-100 text-pink-800 text-sm font-medium mr-2 px-2.5 py-0.5 rounded-full dark:bg-pink-900 dark:text-pink-300">
-            {p?.brand}
+    <div className="group relative rounded-2xl bg-[#141b18] border border-white/5 hover:border-emerald-500/40 p-4 transition-all duration-300 flex flex-col justify-between hover:shadow-xl hover:shadow-black/40">
+      <div>
+        {/* Top Header inside card: Badge + Heart */}
+        <div className="flex items-center justify-between mb-3 z-10 relative">
+          <span className="text-[11px] font-medium tracking-wide text-zinc-300 bg-white/5 border border-white/10 px-3 py-1 rounded-full backdrop-blur-sm">
+            {p?.brand || badge}
           </span>
-          <img
-            className="cursor-pointer w-full"
-            src={p.image}
-            alt={p.name}
-            style={{ height: "170px", objectFit: "cover" }}
-          />
-        </Link>
-        <HeartIcon product={p} />
-      </section>
-
-      <div className="p-5">
-        <div className="flex justify-between">
-          <h5 className="mb-2 text-xl text-whiet dark:text-white">{p?.name}</h5>
-
-          <p className="text-black font-semibold text-pink-500">
-            {p?.price?.toLocaleString("en-US", {
-              style: "currency",
-              currency: "USD",
-            })}
-          </p>
+          <div className="transform transition-transform group-hover:scale-110">
+            <HeartIcon product={p} />
+          </div>
         </div>
 
-        <p className="mb-3 font-normal text-[#CFCFCF]">
-          {p?.description?.substring(0, 60)} ...
-        </p>
+        {/* Product Image */}
+        <Link to={`/product/${p?._id}`} className="block overflow-hidden rounded-xl bg-zinc-950/40 relative aspect-square mb-4">
+          <img
+            src={p?.image || "/images/cookware_showcase.jpg"}
+            alt={p?.name}
+            className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-500"
+          />
+        </Link>
 
-        <section className="flex justify-between items-center">
-          <Link
-            to={`/product/${p._id}`}
-            className="inline-flex items-center px-3 py-2 text-sm font-medium text-center text-white bg-pink-700 rounded-lg hover:bg-pink-800 focus:ring-4 focus:outline-none focus:ring-pink-300 dark:bg-pink-600 dark:hover:bg-pink-700 dark:focus:ring-pink-800"
-          >
-            Read More
-            <svg
-              className="w-3.5 h-3.5 ml-2"
-              aria-hidden="true"
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 14 10"
-            >
-              <path
-                stroke="currentColor"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M1 5h12m0 0L9 1m4 4L9 9"
-              />
-            </svg>
-          </Link>
+        {/* Color Palette Indicator Dots */}
+        <div className="flex items-center space-x-1.5 mb-2.5">
+          <span className="w-2.5 h-2.5 rounded-full bg-[#8ac7b4] border border-black/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#e07a5f] border border-black/20" />
+          <span className="w-2.5 h-2.5 rounded-full bg-[#bcc5b4] border border-black/20" />
+        </div>
 
-          <button
-            className="p-2 rounded-full"
-            onClick={() => addToCartHandler(p, 1)}
-          >
-            <AiOutlineShoppingCart size={25} />
-          </button>
-        </section>
+        {/* Title */}
+        <Link to={`/product/${p?._id}`} className="block">
+          <h3 className="text-sm font-semibold text-zinc-100 group-hover:text-emerald-300 transition-colors line-clamp-2 leading-snug">
+            {p?.name}
+          </h3>
+        </Link>
+      </div>
+
+      {/* Bottom Price & Add to Cart button */}
+      <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
+        <span className="text-base font-bold text-white font-mono">
+          ${typeof p?.price === "number" ? p.price.toFixed(2) : p?.price}
+        </span>
+
+        <button
+          type="button"
+          onClick={(e) => addToCartHandler(e, p)}
+          className="inline-flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-600 px-3.5 py-1.5 rounded-full transition-all shadow-sm shadow-emerald-950 hover:shadow-emerald-900/50 active:scale-95"
+        >
+          <AiOutlinePlus className="text-xs" />
+          <span>Cart</span>
+        </button>
       </div>
     </div>
   );

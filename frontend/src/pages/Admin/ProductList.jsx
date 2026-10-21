@@ -7,6 +7,7 @@ import {
 import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
 import AdminMenu from "./AdminMenu";
+import { FaCloudUploadAlt, FaPlusCircle, FaImage } from "react-icons/fa";
 
 const ProductList = () => {
   const [image, setImage] = useState("");
@@ -20,12 +21,21 @@ const ProductList = () => {
   const [imageUrl, setImageUrl] = useState(null);
   const navigate = useNavigate();
 
-  const [uploadProductImage] = useUploadProductImageMutation();
-  const [createProduct] = useCreateProductMutation();
+  const [uploadProductImage, { isLoading: isUploading }] = useUploadProductImageMutation();
+  const [createProduct, { isLoading: isCreating }] = useCreateProductMutation();
   const { data: categories } = useFetchCategoriesQuery();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    if (!image) {
+      toast.error("Please upload an image for the product");
+      return;
+    }
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
 
     try {
       const productData = new FormData();
@@ -38,152 +48,209 @@ const ProductList = () => {
       productData.append("brand", brand);
       productData.append("countInStock", stock);
 
-      const { data } = await createProduct(productData);
+      const res = await createProduct(productData).unwrap();
 
-      if (data.error) {
-        toast.error("Product create failed. Try Again.");
+      if (res.error) {
+        toast.error("Product creation failed. Try Again.");
       } else {
-        toast.success(`${data.name} is created`);
-        navigate("/");
+        toast.success(`"${name}" published to catalog successfully!`);
+        navigate("/admin/allproductslist");
       }
     } catch (error) {
       console.error(error);
-      toast.error("Product create failed. Try Again.");
+      toast.error(error?.data?.message || "Product creation failed.");
     }
   };
 
   const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
     const formData = new FormData();
-    formData.append("image", e.target.files[0]);
+    formData.append("image", file);
 
     try {
       const res = await uploadProductImage(formData).unwrap();
-      toast.success(res.message);
+      toast.success(res.message || "Image uploaded successfully");
       setImage(res.image);
       setImageUrl(res.image);
     } catch (error) {
-      toast.error(error?.data?.message || error.error);
+      toast.error(error?.data?.message || error.error || "Image upload failed");
     }
   };
 
   return (
-    <div className="container xl:mx-[9rem] sm:mx-[0]">
-      <div className="flex flex-col md:flex-row">
-        <AdminMenu />
-        <div className="md:w-3/4 p-3">
-          <div className="h-12">Create Product</div>
+    <div className="min-h-screen bg-forest-950 text-stone-200">
+      <AdminMenu />
 
-          {imageUrl && (
-            <div className="text-center">
-              <img
-                src={imageUrl}
-                alt="product"
-                className="block mx-auto max-h-[200px]"
-              />
-            </div>
-          )}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="mb-8">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1">
+            <FaPlusCircle className="text-emerald-400" />
+            <span>Product Catalog</span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl text-stone-100 font-bold">
+            Create New Product
+          </h1>
+          <p className="text-xs text-stone-400 mt-1">
+            Add eco-friendly kitchenware, sustainable cookware, or artisan home essentials.
+          </p>
+        </div>
 
-          <div className="mb-3">
-            <label className="border text-white px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11">
-              {image ? image.name : "Upload Image"}
-
-              <input
-                type="file"
-                name="image"
-                accept="image/*"
-                onChange={uploadFileHandler}
-                className={!image ? "hidden" : "text-white"}
-              />
+        <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-10 rounded-3xl border border-emerald-900/30 shadow-2xl space-y-6">
+          {/* Image Uploader */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+              Product Image
             </label>
+            <div className="border-2 border-dashed border-emerald-900/60 hover:border-emerald-500/60 rounded-3xl p-6 transition-colors bg-forest-900/40 text-center">
+              {imageUrl ? (
+                <div className="space-y-4">
+                  <img
+                    src={imageUrl}
+                    alt="Preview"
+                    className="max-h-56 mx-auto rounded-2xl object-cover border border-emerald-900/40 shadow-lg"
+                  />
+                  <label className="inline-flex items-center space-x-2 px-4 py-2 rounded-full bg-emerald-900/50 hover:bg-emerald-800/80 text-emerald-300 text-xs font-semibold cursor-pointer transition-all">
+                    <FaCloudUploadAlt />
+                    <span>Replace Image</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={uploadFileHandler}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center cursor-pointer py-8">
+                  <div className="w-16 h-16 rounded-full bg-emerald-900/30 border border-emerald-700/30 flex items-center justify-center text-emerald-400 text-2xl mb-3">
+                    <FaCloudUploadAlt />
+                  </div>
+                  <span className="text-sm font-semibold text-stone-200">
+                    {isUploading ? "Uploading..." : "Click or drag to upload product photography"}
+                  </span>
+                  <span className="text-xs text-stone-500 mt-1">
+                    PNG, JPG, WEBP up to 10MB (clean kitchen or product shot recommended)
+                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={uploadFileHandler}
+                    className="hidden"
+                  />
+                </label>
+              )}
+            </div>
           </div>
 
-          <div className="p-3">
-            <div className="flex flex-wrap">
-              <div className="one">
-                <label htmlFor="name">Name</label> <br />
-                <input
-                  type="text"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                />
-              </div>
-              <div className="two ml-10 ">
-                <label htmlFor="name block">Price</label> <br />
-                <input
-                  type="number"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  value={price}
-                  onChange={(e) => setPrice(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex flex-wrap">
-              <div className="one">
-                <label htmlFor="name block">Quantity</label> <br />
-                <input
-                  type="number"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  value={quantity}
-                  onChange={(e) => setQuantity(e.target.value)}
-                />
-              </div>
-              <div className="two ml-10 ">
-                <label htmlFor="name block">Brand</label> <br />
-                <input
-                  type="text"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  value={brand}
-                  onChange={(e) => setBrand(e.target.value)}
-                />
-              </div>
+          {/* Title & Brand */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Product Title
+              </label>
+              <input
+                type="text"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                placeholder="e.g. Ceramic Non-Stick Saucepan"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
             </div>
 
-            <label htmlFor="" className="my-5">
-              Description
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Brand / Artisan
+              </label>
+              <input
+                type="text"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                placeholder="e.g. Homedine Organic"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          {/* Price, Stock, Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Price ($ USD)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                placeholder="79.99"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Stock Quantity
+              </label>
+              <input
+                type="number"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                placeholder="50"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Category
+              </label>
+              <select
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="">Choose category</option>
+                {categories?.map((c) => (
+                  <option key={c._id} value={c._id} className="bg-forest-950 text-stone-200">
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+              Story & Description
             </label>
             <textarea
-              type="text"
-              className="p-2 mb-3 bg-[#101011] border rounded-lg w-[95%] text-white"
+              rows="4"
+              className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl p-4 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm resize-none"
+              placeholder="Describe the materials (PTFE-free ceramic, organic bamboo, recycled aluminum), ethical craftsmanship, and key highlights..."
               value={description}
               onChange={(e) => setDescription(e.target.value)}
+              required
             ></textarea>
+          </div>
 
-            <div className="flex justify-between">
-              <div>
-                <label htmlFor="name block">Count In Stock</label> <br />
-                <input
-                  type="text"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  value={stock}
-                  onChange={(e) => setStock(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label htmlFor="">Category</label> <br />
-                <select
-                  placeholder="Choose Category"
-                  className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white"
-                  onChange={(e) => setCategory(e.target.value)}
-                >
-                  {categories?.map((c) => (
-                    <option key={c._id} value={c._id}>
-                      {c.name}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
+          <div className="pt-4">
             <button
-              onClick={handleSubmit}
-              className="py-4 px-10 mt-5 rounded-lg text-lg font-bold bg-pink-600"
+              type="submit"
+              disabled={isCreating}
+              className="w-full py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-lg shadow-emerald-900/50 hover:shadow-emerald-900/70 disabled:opacity-50"
             >
-              Submit
+              {isCreating ? "Publishing Product..." : "Publish Product to Catalog"}
             </button>
           </div>
-        </div>
+        </form>
       </div>
     </div>
   );

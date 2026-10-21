@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { useLocation } from "react-router-dom";
 import { useGetFilteredProductsQuery } from "../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../redux/api/categoryApiSlice";
-
 import {
   setCategories,
   setProducts,
@@ -10,15 +10,54 @@ import {
 } from "../redux/features/shop/shopSlice";
 import Loader from "../components/Loader";
 import ProductCard from "./Products/ProductCard";
+import { FaFilter, FaUndo, FaTag } from "react-icons/fa";
+
+const SAMPLE_SHOP_PRODUCTS = [
+  {
+    _id: "demo-1",
+    name: "Reusable drinkware for a greener lifestyle.",
+    price: 43.85,
+    brand: "Promotion",
+    image: "/images/cookware_showcase.jpg",
+    description: "Vacuum insulated, non-toxic stainless steel & ceramic lining.",
+  },
+  {
+    _id: "demo-2",
+    name: "Non-toxic cookware for sustainable cooking.",
+    price: 78.35,
+    brand: "New",
+    image: "/images/kitchen_hero.jpg",
+    description: "Naturally non-stick mineral ceramic coating free of PTFE and PFOA.",
+  },
+  {
+    _id: "demo-3",
+    name: "Kettle & Toaster eco-friendly meals.",
+    price: 143.65,
+    brand: "Customer favorite",
+    image: "/images/auth_lifestyle.jpg",
+    description: "Energy efficient rapid boil with brushed sage ceramic finish.",
+  },
+  {
+    _id: "demo-4",
+    name: "Bamboo Made Utensil Holder with Spoons",
+    price: 26.27,
+    brand: "New",
+    image: "/images/cookware_showcase.jpg",
+    description: "Organically grown FSC-certified bamboo spoons and countertop crock.",
+  },
+];
 
 const Shop = () => {
   const dispatch = useDispatch();
+  const location = useLocation();
+
   const { categories, products, checked, radio } = useSelector(
     (state) => state.shop
   );
 
   const categoriesQuery = useFetchCategoriesQuery();
   const [priceFilter, setPriceFilter] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
 
   const filteredProductsQuery = useGetFilteredProductsQuery({
     checked,
@@ -26,35 +65,37 @@ const Shop = () => {
   });
 
   useEffect(() => {
-    if (!categoriesQuery.isLoading) {
+    if (!categoriesQuery.isLoading && categoriesQuery.data) {
       dispatch(setCategories(categoriesQuery.data));
     }
-  }, [categoriesQuery.data, dispatch]);
+  }, [categoriesQuery.data, categoriesQuery.isLoading, dispatch]);
 
   useEffect(() => {
-    if (!checked.length || !radio.length) {
-      if (!filteredProductsQuery.isLoading && Array.isArray(filteredProductsQuery.data)) {
-        // Filter products based on both checked categories and price filter
-        const filteredProducts = filteredProductsQuery.data.filter(
-          (product) => {
-            // Check if the product price includes the entered price filter value
-            return (
-              product.price.toString().includes(priceFilter) ||
-              product.price === parseInt(priceFilter, 10)
-            );
-          }
-        );
+    if (!filteredProductsQuery.isLoading) {
+      const source = Array.isArray(filteredProductsQuery.data) && filteredProductsQuery.data.length > 0
+        ? filteredProductsQuery.data
+        : SAMPLE_SHOP_PRODUCTS;
 
-        dispatch(setProducts(filteredProducts));
+      let filtered = source;
+
+      if (priceFilter) {
+        filtered = filtered.filter(
+          (product) =>
+            product.price.toString().includes(priceFilter) ||
+            product.price <= parseFloat(priceFilter)
+        );
       }
+
+      if (selectedBrand) {
+        filtered = filtered.filter((p) => p.brand === selectedBrand);
+      }
+
+      dispatch(setProducts(filtered));
     }
-  }, [checked, radio, filteredProductsQuery.data, dispatch, priceFilter]);
+  }, [checked, radio, filteredProductsQuery.data, filteredProductsQuery.isLoading, dispatch, priceFilter, selectedBrand]);
 
   const handleBrandClick = (brand) => {
-    const productsByBrand = filteredProductsQuery.data?.filter(
-      (product) => product.brand === brand
-    );
-    dispatch(setProducts(productsByBrand));
+    setSelectedBrand(brand === selectedBrand ? "" : brand);
   };
 
   const handleCheck = (value, id) => {
@@ -64,121 +105,165 @@ const Shop = () => {
     dispatch(setChecked(updatedChecked));
   };
 
-  // Add "All Brands" option to uniqueBrands
+  const handlePriceChange = (e) => {
+    setPriceFilter(e.target.value);
+  };
+
+  const resetFilters = () => {
+    setPriceFilter("");
+    setSelectedBrand("");
+    dispatch(setChecked([]));
+  };
+
+  const allAvailableProducts = Array.isArray(filteredProductsQuery.data) && filteredProductsQuery.data.length > 0
+    ? filteredProductsQuery.data
+    : SAMPLE_SHOP_PRODUCTS;
+
   const uniqueBrands = [
     ...Array.from(
       new Set(
-        filteredProductsQuery.data
-          ?.map((product) => product.brand)
-          .filter((brand) => brand !== undefined)
+        allAvailableProducts
+          .map((p) => p.brand)
+          .filter((b) => Boolean(b))
       )
     ),
   ];
 
-  const handlePriceChange = (e) => {
-    // Update the price filter state when the user types in the input filed
-    setPriceFilter(e.target.value);
-  };
-
   return (
-    <>
-      <div className="container mx-auto">
-        <div className="flex md:flex-row">
-          <div className="bg-[#151515] p-3 mt-2 mb-2">
-            <h2 className="h4 text-center py-2 bg-black rounded-full mb-2">
-              Filter by Categories
-            </h2>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      {/* Header Banner */}
+      <div className="mb-10 pb-6 border-b border-white/10 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <span className="text-xs uppercase tracking-wider text-emerald-400 font-semibold block mb-1">
+            Conscious Collections
+          </span>
+          <h1 className="font-editorial text-3xl sm:text-4xl text-white font-medium">
+            Explore <em className="italic text-emerald-300 font-normal">All Essentials</em>
+          </h1>
+        </div>
+        <p className="text-xs text-zinc-400">
+          Showing <span className="font-bold text-white">{products?.length || 0}</span> eco-friendly curated products
+        </p>
+      </div>
 
-            <div className="p-5 w-[15rem]">
-              {categories?.map((c) => (
-                <div key={c._id} className="mb-2">
-                  <div className="flex ietms-center mr-4">
-                    <input
-                      type="checkbox"
-                      id="red-checkbox"
-                      onChange={(e) => handleCheck(e.target.checked, c._id)}
-                      className="w-4 h-4 text-pink-600 bg-gray-100 border-gray-300 rounded focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    />
-
-                    <label
-                      htmlFor="pink-checkbox"
-                      className="ml-2 text-sm font-medium text-white dark:text-gray-300"
-                    >
-                      {c.name}
-                    </label>
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            <h2 className="h4 text-center py-2 bg-black rounded-full mb-2">
-              Filter by Brands
-            </h2>
-
-            <div className="p-5">
-              {uniqueBrands?.map((brand) => (
-                <>
-                  <div className="flex items-enter mr-4 mb-5">
-                    <input
-                      type="radio"
-                      id={brand}
-                      name="brand"
-                      onChange={() => handleBrandClick(brand)}
-                      className="w-4 h-4 text-pink-400 bg-gray-100 border-gray-300 focus:ring-pink-500 dark:focus:ring-pink-600 dark:ring-offset-gray-800 focus:ring-2 dark:bg-gray-700 dark:border-gray-600"
-                    />
-
-                    <label
-                      htmlFor="pink-radio"
-                      className="ml-2 text-sm font-medium text-white dark:text-gray-300"
-                    >
-                      {brand}
-                    </label>
-                  </div>
-                </>
-              ))}
-            </div>
-
-            <h2 className="h4 text-center py-2 bg-black rounded-full mb-2">
-              Filer by Price
-            </h2>
-
-            <div className="p-5 w-[15rem]">
-              <input
-                type="text"
-                placeholder="Enter Price"
-                value={priceFilter}
-                onChange={handlePriceChange}
-                className="w-full px-3 py-2 placeholder-gray-400 border rounded-lg focus:outline-none focus:ring focus:border-pink-300"
-              />
-            </div>
-
-            <div className="p-5 pt-0">
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        {/* Left Filter Sidebar */}
+        <aside className="lg:col-span-1 space-y-6">
+          <div className="p-6 rounded-2xl bg-zinc-900/60 border border-white/10 shadow-xl space-y-6">
+            <div className="flex items-center justify-between pb-3 border-b border-white/5">
+              <div className="flex items-center space-x-2 text-sm font-bold text-white">
+                <FaFilter className="text-emerald-400 text-xs" />
+                <span>Filters</span>
+              </div>
               <button
-                className="w-full border my-4"
-                onClick={() => window.location.reload()}
+                type="button"
+                onClick={resetFilters}
+                className="text-xs text-emerald-400 hover:text-emerald-300 flex items-center space-x-1"
               >
-                Reset
+                <FaUndo className="text-[10px]" />
+                <span>Reset</span>
               </button>
             </div>
-          </div>
 
-          <div className="p-3">
-            <h2 className="h4 text-center mb-2">{products?.length} Products</h2>
-            <div className="flex flex-wrap">
-              {products.length === 0 ? (
-                <Loader />
-              ) : (
-                products?.map((p) => (
-                  <div className="p-3" key={p._id}>
-                    <ProductCard p={p} />
-                  </div>
-                ))
-              )}
+            {/* Filter by Categories */}
+            <div>
+              <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-300 mb-3 flex items-center space-x-2">
+                <FaTag className="text-xs text-emerald-400" />
+                <span>Categories</span>
+              </h3>
+              <div className="space-y-2">
+                {categories && categories.length > 0 ? (
+                  categories.map((c) => (
+                    <label
+                      key={c._id}
+                      className="flex items-center space-x-3 text-xs text-zinc-300 hover:text-white cursor-pointer select-none"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={checked.includes(c._id)}
+                        onChange={(e) => handleCheck(e.target.checked, c._id)}
+                        className="w-4 h-4 rounded bg-zinc-800 border-zinc-700 text-emerald-600 focus:ring-emerald-500 focus:ring-offset-zinc-900"
+                      />
+                      <span>{c.name}</span>
+                    </label>
+                  ))
+                ) : (
+                  <p className="text-xs text-zinc-500">No categories added yet</p>
+                )}
+              </div>
+            </div>
+
+            {/* Filter by Brands */}
+            {uniqueBrands.length > 0 && (
+              <div className="pt-4 border-t border-white/5">
+                <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-300 mb-3">
+                  Collections & Tags
+                </h3>
+                <div className="flex flex-wrap gap-2">
+                  {uniqueBrands.map((brand) => (
+                    <button
+                      key={brand}
+                      type="button"
+                      onClick={() => handleBrandClick(brand)}
+                      className={`text-xs px-3 py-1.5 rounded-full border transition-all ${
+                        selectedBrand === brand
+                          ? "bg-emerald-600 border-emerald-500 text-white font-semibold"
+                          : "bg-zinc-800/60 border-zinc-700/80 text-zinc-300 hover:border-zinc-500 hover:text-white"
+                      }`}
+                    >
+                      {brand}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Filter by Max Price */}
+            <div className="pt-4 border-t border-white/5">
+              <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-300 mb-3">
+                Max Price ($)
+              </h3>
+              <input
+                type="number"
+                placeholder="e.g. 100"
+                value={priceFilter}
+                onChange={handlePriceChange}
+                className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500"
+              />
             </div>
           </div>
+        </aside>
+
+        {/* Right Product Grid */}
+        <div className="lg:col-span-3">
+          {filteredProductsQuery.isLoading ? (
+            <div className="py-20 flex justify-center">
+              <Loader />
+            </div>
+          ) : products && products.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {products.map((p) => (
+                <ProductCard key={p._id} p={p} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20 p-8 rounded-2xl bg-zinc-900/40 border border-white/5 space-y-3">
+              <p className="text-sm font-semibold text-white">No products found</p>
+              <p className="text-xs text-zinc-400">
+                Try adjusting your search criteria or resetting the active filters.
+              </p>
+              <button
+                type="button"
+                onClick={resetFilters}
+                className="inline-block mt-3 px-4 py-2 text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-500 rounded-full transition-colors"
+              >
+                Clear all filters
+              </button>
+            </div>
+          )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

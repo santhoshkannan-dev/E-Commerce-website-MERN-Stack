@@ -9,66 +9,53 @@ import {
 } from "../../redux/api/productApiSlice";
 import { useFetchCategoriesQuery } from "../../redux/api/categoryApiSlice";
 import { toast } from "react-toastify";
+import { FaCloudUploadAlt, FaTrash, FaCheck, FaEdit } from "react-icons/fa";
 
 const AdminProductUpdate = () => {
   const params = useParams();
-
-  const { data: productData } = useGetProductByIdQuery(params._id);
-
-  console.log(productData);
-
-  const [image, setImage] = useState(productData?.image || "");
-  const [name, setName] = useState(productData?.name || "");
-  const [description, setDescription] = useState(
-    productData?.description || ""
-  );
-  const [price, setPrice] = useState(productData?.price || "");
-  const [category, setCategory] = useState(productData?.category || "");
-  const [quantity, setQuantity] = useState(productData?.quantity || "");
-  const [brand, setBrand] = useState(productData?.brand || "");
-  const [stock, setStock] = useState(productData?.countInStock);
-
-  // hook
   const navigate = useNavigate();
 
-  // Fetch categories using RTK Query
+  const { data: productData, isLoading: loadingProduct } = useGetProductByIdQuery(params._id);
   const { data: categories = [] } = useFetchCategoriesQuery();
 
-  const [uploadProductImage] = useUploadProductImageMutation();
+  const [image, setImage] = useState("");
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [price, setPrice] = useState("");
+  const [category, setCategory] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [brand, setBrand] = useState("");
+  const [stock, setStock] = useState(0);
 
-  // Define the update product mutation
-  const [updateProduct] = useUpdateProductMutation();
-
-  // Define the delete product mutation
-  const [deleteProduct] = useDeleteProductMutation();
+  const [uploadProductImage, { isLoading: isUploading }] = useUploadProductImageMutation();
+  const [updateProduct, { isLoading: isUpdating }] = useUpdateProductMutation();
+  const [deleteProduct, { isLoading: isDeleting }] = useDeleteProductMutation();
 
   useEffect(() => {
     if (productData && productData._id) {
-      setName(productData.name);
-      setDescription(productData.description);
-      setPrice(productData.price);
+      setName(productData.name || "");
+      setDescription(productData.description || "");
+      setPrice(productData.price || "");
       setCategory(productData.category?._id || productData.category || "");
-      setQuantity(productData.quantity);
-      setBrand(productData.brand);
-      setImage(productData.image);
+      setQuantity(productData.quantity || "");
+      setBrand(productData.brand || "");
+      setImage(productData.image || "");
+      setStock(productData.countInStock ?? 0);
     }
   }, [productData]);
 
   const uploadFileHandler = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
     const formData = new FormData();
-    formData.append("image", e.target.files[0]);
+    formData.append("image", file);
     try {
       const res = await uploadProductImage(formData).unwrap();
-      toast.success("Item added successfully", {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 2000,
-      });
+      toast.success("Image uploaded successfully");
       setImage(res.image);
     } catch (err) {
-      toast.success("Item added successfully", {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 2000,
-      });
+      toast.error(err?.data?.message || err.message || "Image upload failed");
     }
   };
 
@@ -85,184 +72,195 @@ const AdminProductUpdate = () => {
       formData.append("brand", brand);
       formData.append("countInStock", stock);
 
-      // Update product using the RTK Query mutation
-      const data = await updateProduct({ productId: params._id, formData });
+      const data = await updateProduct({ productId: params._id, formData }).unwrap();
 
       if (data?.error) {
-        toast.error(data.error, {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 2000,
-        });
+        toast.error(data.error);
       } else {
-        toast.success(`Product successfully updated`, {
-          position: toast.POSITION.TOP_RIGHT,
-          autoClose: 2000,
-        });
+        toast.success(`"${name}" updated successfully`);
         navigate("/admin/allproductslist");
       }
     } catch (err) {
-      console.log(err);
-      toast.error("Product update failed. Try again.", {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 2000,
-      });
+      toast.error(err?.data?.message || err.message || "Product update failed");
     }
   };
 
   const handleDelete = async () => {
     try {
-      let answer = window.confirm(
-        "Are you sure you want to delete this product?"
-      );
+      const answer = window.confirm("Are you sure you want to delete this product?");
       if (!answer) return;
 
-      const { data } = await deleteProduct(params._id);
-      toast.success(`"${data.name}" is deleted`, {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 2000,
-      });
+      const data = await deleteProduct(params._id).unwrap();
+      toast.success(`"${data.name || name}" deleted from catalog`);
       navigate("/admin/allproductslist");
     } catch (err) {
-      console.log(err);
-      toast.error("Delete failed. Try again.", {
-        position: toast.POSITION.TOP_RIGHT,
-        autoClose: 2000,
-      });
+      toast.error(err?.data?.message || err.message || "Delete failed");
     }
   };
 
   return (
-    <>
-      <div className="container  xl:mx-[9rem] sm:mx-[0]">
-        <div className="flex flex-col md:flex-row">
-          <AdminMenu />
-          <div className="md:w-3/4 p-3">
-            <div className="h-12">Update / Delete Product</div>
+    <div className="min-h-screen bg-forest-950 text-stone-200">
+      <AdminMenu />
 
-            {image && (
-              <div className="text-center">
-                <img
-                  src={image}
-                  alt="product"
-                  className="block mx-auto w-full h-[40%]"
-                />
-              </div>
-            )}
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+        <div className="mb-8">
+          <div className="flex items-center space-x-2 text-xs font-semibold text-emerald-400 uppercase tracking-widest mb-1">
+            <FaEdit className="text-emerald-400" />
+            <span>Product Catalog</span>
+          </div>
+          <h1 className="font-serif text-3xl sm:text-4xl text-stone-100 font-bold">
+            Update Product Details
+          </h1>
+          <p className="text-xs text-stone-400 mt-1">
+            Modify pricing, sustainable materials description, inventory count, and photography.
+          </p>
+        </div>
 
-            <div className="mb-3">
-              <label className="text-white  py-2 px-4 block w-full text-center rounded-lg cursor-pointer font-bold py-11">
-                {image ? image.name : "Upload image"}
+        <form onSubmit={handleSubmit} className="glass-panel p-6 sm:p-10 rounded-3xl border border-emerald-900/30 shadow-2xl space-y-6">
+          {/* Image Uploader */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+              Product Photography
+            </label>
+            <div className="border-2 border-dashed border-emerald-900/60 rounded-3xl p-6 bg-forest-900/40 text-center">
+              {image && (
+                <div className="space-y-4 mb-4">
+                  <img
+                    src={image}
+                    alt="Current"
+                    className="max-h-56 mx-auto rounded-2xl object-cover border border-emerald-900/40 shadow-lg"
+                  />
+                </div>
+              )}
+              <label className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-full bg-emerald-900/50 hover:bg-emerald-800/80 text-emerald-300 text-xs font-semibold cursor-pointer transition-all">
+                <FaCloudUploadAlt className="text-sm" />
+                <span>{isUploading ? "Uploading..." : "Upload New Image"}</span>
                 <input
                   type="file"
-                  name="image"
                   accept="image/*"
                   onChange={uploadFileHandler}
-                  className="text-white"
+                  className="hidden"
                 />
               </label>
             </div>
+          </div>
 
-            <div className="p-3">
-              <div className="flex flex-wrap">
-                <div className="one">
-                  <label htmlFor="name">Name</label> <br />
-                  <input
-                    type="text"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white mr-[5rem]"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                  />
-                </div>
-
-                <div className="two">
-                  <label htmlFor="name block">Price</label> <br />
-                  <input
-                    type="number"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white "
-                    value={price}
-                    onChange={(e) => setPrice(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <div className="flex flex-wrap">
-                <div>
-                  <label htmlFor="name block">Quantity</label> <br />
-                  <input
-                    type="number"
-                    min="1"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white mr-[5rem]"
-                    value={quantity}
-                    onChange={(e) => setQuantity(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="name block">Brand</label> <br />
-                  <input
-                    type="text"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white "
-                    value={brand}
-                    onChange={(e) => setBrand(e.target.value)}
-                  />
-                </div>
-              </div>
-
-              <label htmlFor="" className="my-5">
-                Description
+          {/* Title & Brand */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Product Name
               </label>
-              <textarea
+              <input
                 type="text"
-                className="p-2 mb-3 bg-[#101011]  border rounded-lg w-[95%] text-white"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
               />
+            </div>
 
-              <div className="flex justify-between">
-                <div>
-                  <label htmlFor="name block">Count In Stock</label> <br />
-                  <input
-                    type="text"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white "
-                    value={stock}
-                    onChange={(e) => setStock(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="">Category</label> <br />
-                  <select
-                    placeholder="Choose Category"
-                    className="p-4 mb-3 w-[30rem] border rounded-lg bg-[#101011] text-white mr-[5rem]"
-                    onChange={(e) => setCategory(e.target.value)}
-                  >
-                    {categories?.map((c) => (
-                      <option key={c._id} value={c._id}>
-                        {c.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              <div className="">
-                <button
-                  onClick={handleSubmit}
-                  className="py-4 px-10 mt-5 rounded-lg text-lg font-bold  bg-green-600 mr-6"
-                >
-                  Update
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="py-4 px-10 mt-5 rounded-lg text-lg font-bold  bg-pink-600"
-                >
-                  Delete
-                </button>
-              </div>
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Brand / Artisan
+              </label>
+              <input
+                type="text"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={brand}
+                onChange={(e) => setBrand(e.target.value)}
+                required
+              />
             </div>
           </div>
-        </div>
+
+          {/* Price, Stock, Category */}
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Price ($ USD)
+              </label>
+              <input
+                type="number"
+                step="0.01"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={price}
+                onChange={(e) => setPrice(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Stock Quantity
+              </label>
+              <input
+                type="number"
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={stock}
+                onChange={(e) => setStock(e.target.value)}
+                required
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+                Category
+              </label>
+              <select
+                className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                required
+              >
+                <option value="">Select category</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c._id} className="bg-forest-950 text-stone-200">
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          {/* Description */}
+          <div>
+            <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
+              Product Story & Materials
+            </label>
+            <textarea
+              rows="4"
+              className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl p-4 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm resize-none"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              required
+            ></textarea>
+          </div>
+
+          {/* Action buttons */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center gap-4">
+            <button
+              type="submit"
+              disabled={isUpdating}
+              className="w-full sm:flex-1 py-3.5 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-semibold text-xs tracking-wider uppercase transition-all shadow-lg shadow-emerald-900/50 flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              <FaCheck className="text-xs" />
+              <span>{isUpdating ? "Saving Changes..." : "Update Product"}</span>
+            </button>
+
+            <button
+              type="button"
+              disabled={isDeleting}
+              onClick={handleDelete}
+              className="w-full sm:w-auto py-3.5 px-6 rounded-2xl bg-red-950/40 hover:bg-red-900/60 border border-red-800/60 text-red-300 font-semibold text-xs tracking-wider uppercase transition-all flex items-center justify-center space-x-2 disabled:opacity-50"
+            >
+              <FaTrash className="text-xs" />
+              <span>{isDeleting ? "Deleting..." : "Delete Item"}</span>
+            </button>
+          </div>
+        </form>
       </div>
-    </>
+    </div>
   );
 };
 

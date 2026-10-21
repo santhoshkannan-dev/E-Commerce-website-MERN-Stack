@@ -1,106 +1,53 @@
-import { useState } from "react";
 import { NavLink } from "react-router-dom";
-import { FaTimes } from "react-icons/fa";
+import {
+  FaChartPie,
+  FaTags,
+  FaPlusCircle,
+  FaBoxes,
+  FaUsers,
+  FaClipboardList,
+} from "react-icons/fa";
 
 const AdminMenu = () => {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  const toggleMenu = () => {
-    setIsMenuOpen(!isMenuOpen);
-  };
+  const links = [
+    { to: "/admin/dashboard", label: "Dashboard", icon: FaChartPie },
+    { to: "/admin/allproductslist", label: "All Products", icon: FaBoxes },
+    { to: "/admin/productlist", label: "New Product", icon: FaPlusCircle },
+    { to: "/admin/categorylist", label: "Categories", icon: FaTags },
+    { to: "/admin/orderlist", label: "Orders", icon: FaClipboardList },
+    { to: "/admin/userlist", label: "Users", icon: FaUsers },
+  ];
 
   return (
-    <>
-      <button
-        className={`${
-          isMenuOpen ? "top-2 right-2" : "top-5 right-7"
-        } bg-[#151515] p-2 fixed rounded-lg`}
-        onClick={toggleMenu}
-      >
-        {isMenuOpen ? (
-          <FaTimes color="white" />
-        ) : (
-          <>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-            <div className="w-6 h-0.5 bg-gray-200 my-1"></div>
-          </>
-        )}
-      </button>
+    <div className="w-full bg-forest-950/90 border-b border-emerald-900/40 backdrop-blur-md sticky top-[73px] z-30 mb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center space-x-2 py-3 overflow-x-auto no-scrollbar">
+          <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400/70 mr-3 hidden md:inline-block">
+            Admin Suite:
+          </span>
 
-      {isMenuOpen && (
-        <section className="bg-[#151515] p-4 fixed right-7 top-5">
-          <ul className="list-none mt-2">
-            <li>
+          {links.map((link) => {
+            const Icon = link.icon;
+            return (
               <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/dashboard"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
+                key={link.to}
+                to={link.to}
+                className={({ isActive }) =>
+                  `flex items-center space-x-2 px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
+                    isActive
+                      ? "bg-emerald-600 text-white shadow-md shadow-emerald-900/50"
+                      : "text-stone-300 hover:text-emerald-300 hover:bg-forest-900/60"
+                  }`
+                }
               >
-                Admin Dashboard
+                <Icon className="text-xs" />
+                <span>{link.label}</span>
               </NavLink>
-            </li>
-            <li>
-              <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/categorylist"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
-              >
-                Create Category
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/productlist"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
-              >
-                Create Product
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/allproductslist"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
-              >
-                All Products
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/userlist"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
-              >
-                Manage Users
-              </NavLink>
-            </li>
-            <li>
-              <NavLink
-                className="list-item py-2 px-3 block mb-5 hover:bg-[#2E2D2D] rounded-sm"
-                to="/admin/orderlist"
-                style={({ isActive }) => ({
-                  color: isActive ? "greenyellow" : "white",
-                })}
-              >
-                Manage Orders
-              </NavLink>
-            </li>
-          </ul>
-        </section>
-      )}
-    </>
+            );
+          })}
+        </div>
+      </div>
+    </div>
   );
 };
 

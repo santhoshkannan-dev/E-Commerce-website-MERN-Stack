@@ -2,12 +2,56 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  background: #0f0f10;
-  color: #fff;
+@layer base {
+  body {
+    @apply bg-[#0c1210] text-[#f4f4f0] font-sans antialiased selection:bg-forest-500 selection:text-white;
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, .font-editorial {
+    font-family: 'Playfair Display', Georgia, serif;
+  }
 }
 
-input,
-textarea {
-  color: #000;
+/* Custom aesthetic scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0c1210;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #24584a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3d8a74;
+}
+
+/* Glassmorphism utility */
+.glass-panel {
+  background: rgba(18, 28, 24, 0.75);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.glass-pill {
+  background: rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+/* Shimmer animation */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2.5s infinite;
 }
