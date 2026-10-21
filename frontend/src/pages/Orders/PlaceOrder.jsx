@@ -101,14 +101,14 @@ const PlaceOrder = () => {
                             {item.name}
                           </Link>
                           <div className="text-xs text-stone-400 mt-1">
-                            Qty: <span className="text-stone-200 font-semibold">{item.qty}</span> × ${Number(item.price).toFixed(2)}
+                            Qty: <span className="text-stone-200 font-semibold">{item.qty}</span> × ₹{Number(item.price).toLocaleString("en-IN")}
                           </div>
                         </div>
                       </div>
 
                       <div className="text-right">
-                        <div className="font-mono text-base font-bold text-stone-100">
-                          ${(item.qty * item.price).toFixed(2)}
+                        <div className="font-mono text-base font-bold text-emerald-300">
+                          ₹{Number(item.qty * item.price).toLocaleString("en-IN")}
                         </div>
                       </div>
                     </div>
@@ -166,7 +166,7 @@ const PlaceOrder = () => {
                 <div className="space-y-3 text-sm text-stone-300">
                   <div className="flex justify-between">
                     <span>Items Subtotal</span>
-                    <span className="font-mono text-stone-200">${Number(cart.itemsPrice).toFixed(2)}</span>
+                    <span className="font-mono text-stone-200">₹{Number(cart.itemsPrice).toLocaleString("en-IN")}</span>
                   </div>
 
                   <div className="flex justify-between items-center">
@@ -178,20 +178,20 @@ const PlaceOrder = () => {
                       {Number(cart.shippingPrice) === 0 ? (
                         <span className="text-emerald-400 font-semibold uppercase text-xs">Free</span>
                       ) : (
-                        `$${Number(cart.shippingPrice).toFixed(2)}`
+                        `₹${Number(cart.shippingPrice).toLocaleString("en-IN")}`
                       )}
                     </span>
                   </div>
 
                   <div className="flex justify-between">
-                    <span>Estimated Tax</span>
-                    <span className="font-mono text-stone-200">${Number(cart.taxPrice).toFixed(2)}</span>
+                    <span>Estimated GST (5%)</span>
+                    <span className="font-mono text-stone-200">₹{Number(cart.taxPrice).toLocaleString("en-IN")}</span>
                   </div>
 
                   <div className="pt-4 border-t border-emerald-900/30 flex justify-between items-baseline">
                     <span className="font-serif text-base font-bold text-stone-100">Grand Total</span>
                     <span className="font-mono text-2xl font-bold text-emerald-400">
-                      ${Number(cart.totalPrice).toFixed(2)}
+                      ₹{Number(cart.totalPrice).toLocaleString("en-IN")}
                     </span>
                   </div>
                 </div>

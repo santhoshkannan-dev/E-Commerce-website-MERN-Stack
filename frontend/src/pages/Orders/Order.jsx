@@ -123,14 +123,14 @@ const Order = () => {
                           {item.name}
                         </Link>
                         <div className="text-xs text-stone-400 mt-1">
-                          Qty: <span className="text-stone-200 font-semibold">{item.qty}</span> × ${Number(item.price).toFixed(2)}
+                          Qty: <span className="text-stone-200 font-semibold">{item.qty}</span> × ₹{Number(item.price).toLocaleString("en-IN")}
                         </div>
                       </div>
                     </div>
 
                     <div className="text-right">
-                      <div className="font-mono text-base font-bold text-stone-100">
-                        ${(item.qty * item.price).toFixed(2)}
+                      <div className="font-mono text-base font-bold text-emerald-300">
+                        ₹{Number(item.qty * item.price).toLocaleString("en-IN")}
                       </div>
                     </div>
                   </div>
@@ -177,22 +177,22 @@ const Order = () => {
               <div className="space-y-2.5 text-xs text-stone-300">
                 <div className="flex justify-between">
                   <span>Items Total</span>
-                  <span className="font-mono text-stone-200">${Number(order.itemsPrice).toFixed(2)}</span>
+                  <span className="font-mono text-stone-200">₹{Number(order.itemsPrice).toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Shipping</span>
                   <span className="font-mono text-stone-200">
-                    {Number(order.shippingPrice) === 0 ? "Free" : `$${Number(order.shippingPrice).toFixed(2)}`}
+                    {Number(order.shippingPrice) === 0 ? "Free" : `₹${Number(order.shippingPrice).toLocaleString("en-IN")}`}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Tax</span>
-                  <span className="font-mono text-stone-200">${Number(order.taxPrice).toFixed(2)}</span>
+                  <span>GST (5%)</span>
+                  <span className="font-mono text-stone-200">₹{Number(order.taxPrice).toLocaleString("en-IN")}</span>
                 </div>
                 <div className="pt-3 border-t border-emerald-900/30 flex justify-between items-baseline">
                   <span className="font-serif text-sm font-bold text-stone-100">Total Charged</span>
                   <span className="font-mono text-xl font-bold text-emerald-400">
-                    ${Number(order.totalPrice).toFixed(2)}
+                    ₹{Number(order.totalPrice).toLocaleString("en-IN")}
                   </span>
                 </div>
               </div>

@@ -138,8 +138,8 @@ const ProductDetails = () => {
 
               {/* Price & Stock Status */}
               <div className="flex items-baseline space-x-4">
-                <span className="text-4xl font-bold font-mono text-white">
-                  ${product.price}
+                <span className="text-4xl font-bold font-mono text-emerald-300">
+                  ₹{Number(product.price || 0).toLocaleString("en-IN")}
                 </span>
                 <span className="text-xs text-emerald-400 bg-emerald-950/60 border border-emerald-800/60 px-3 py-1 rounded-full font-medium">
                   {product.countInStock > 0 ? "In Stock • Ships Free" : "Out of Stock"}

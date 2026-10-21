@@ -178,11 +178,11 @@ const AdminProductUpdate = () => {
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-stone-300 mb-2">
-                Price ($ USD)
+                Price (₹ INR)
               </label>
               <input
                 type="number"
-                step="0.01"
+                step="1"
                 className="w-full bg-forest-900/70 border border-emerald-900/40 rounded-xl px-4 py-3 text-stone-100 placeholder-stone-500 focus:outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-500/20 text-sm"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}

@@ -73,7 +73,7 @@ const OrderList = ({ isEmbedded = false }) => {
                     </td>
 
                     <td className="py-4 px-4 font-mono font-bold text-stone-100">
-                      ${Number(order.totalPrice).toFixed(2)}
+                      ₹{Math.round(order.totalPrice || 0).toLocaleString('en-IN')}
                     </td>
 
                     <td className="py-4 px-4 text-center">

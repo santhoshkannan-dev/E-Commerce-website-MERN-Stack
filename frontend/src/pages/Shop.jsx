@@ -16,32 +16,36 @@ const SAMPLE_SHOP_PRODUCTS = [
   {
     _id: "demo-1",
     name: "Reusable drinkware for a greener lifestyle.",
-    price: 43.85,
+    price: 1299,
     brand: "Promotion",
+    rating: 4.8,
     image: "/images/cookware_showcase.jpg",
     description: "Vacuum insulated, non-toxic stainless steel & ceramic lining.",
   },
   {
     _id: "demo-2",
     name: "Non-toxic cookware for sustainable cooking.",
-    price: 78.35,
+    price: 2499,
     brand: "New",
+    rating: 5.0,
     image: "/images/kitchen_hero.jpg",
     description: "Naturally non-stick mineral ceramic coating free of PTFE and PFOA.",
   },
   {
     _id: "demo-3",
     name: "Kettle & Toaster eco-friendly meals.",
-    price: 143.65,
+    price: 4299,
     brand: "Customer favorite",
+    rating: 4.9,
     image: "/images/auth_lifestyle.jpg",
     description: "Energy efficient rapid boil with brushed sage ceramic finish.",
   },
   {
     _id: "demo-4",
     name: "Bamboo Made Utensil Holder with Spoons",
-    price: 26.27,
+    price: 799,
     brand: "New",
+    rating: 4.7,
     image: "/images/cookware_showcase.jpg",
     description: "Organically grown FSC-certified bamboo spoons and countertop crock.",
   },
@@ -50,6 +54,10 @@ const SAMPLE_SHOP_PRODUCTS = [
 const Shop = () => {
   const dispatch = useDispatch();
   const location = useLocation();
+
+  const searchParams = new URLSearchParams(location.search);
+  const filterParam = searchParams.get("filter");
+  const searchParam = searchParams.get("search");
 
   const { categories, products, checked, radio } = useSelector(
     (state) => state.shop
@@ -76,7 +84,23 @@ const Shop = () => {
         ? filteredProductsQuery.data
         : SAMPLE_SHOP_PRODUCTS;
 
-      let filtered = source;
+      let filtered = [...source];
+
+      // Handle URL filter query (?filter=bestseller)
+      if (filterParam === "bestseller") {
+        filtered = filtered.filter((p) => (p.rating || 4.5) >= 4.5);
+      }
+
+      // Handle URL search query (?search=...)
+      if (searchParam) {
+        const query = searchParam.toLowerCase();
+        filtered = filtered.filter(
+          (p) =>
+            p.name.toLowerCase().includes(query) ||
+            p.description?.toLowerCase().includes(query) ||
+            p.brand?.toLowerCase().includes(query)
+        );
+      }
 
       if (priceFilter) {
         filtered = filtered.filter(
@@ -92,7 +116,7 @@ const Shop = () => {
 
       dispatch(setProducts(filtered));
     }
-  }, [checked, radio, filteredProductsQuery.data, filteredProductsQuery.isLoading, dispatch, priceFilter, selectedBrand]);
+  }, [checked, radio, filteredProductsQuery.data, filteredProductsQuery.isLoading, dispatch, priceFilter, selectedBrand, filterParam, searchParam]);
 
   const handleBrandClick = (brand) => {
     setSelectedBrand(brand === selectedBrand ? "" : brand);
@@ -221,11 +245,11 @@ const Shop = () => {
             {/* Filter by Max Price */}
             <div className="pt-4 border-t border-white/5">
               <h3 className="text-xs uppercase font-bold tracking-wider text-zinc-300 mb-3">
-                Max Price ($)
+                Max Price (₹)
               </h3>
               <input
                 type="number"
-                placeholder="e.g. 100"
+                placeholder="e.g. 5000"
                 value={priceFilter}
                 onChange={handlePriceChange}
                 className="w-full bg-zinc-950 border border-zinc-800 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500"

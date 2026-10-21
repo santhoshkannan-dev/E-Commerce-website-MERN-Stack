@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useGetProductsQuery } from "../redux/api/productApiSlice";
 import Loader from "../components/Loader";
@@ -17,12 +17,12 @@ import {
   FaGlobeAmericas,
 } from "react-icons/fa";
 
-// Curated demo products matching the Homedine mockup
+// Curated demo products matching the Homedine mockup with INR prices
 const CURATED_SAMPLE_PRODUCTS = [
   {
     _id: "demo-1",
     name: "Reusable drinkware for a greener lifestyle.",
-    price: 43.85,
+    price: 1299,
     brand: "Promotion",
     image: "/images/cookware_showcase.jpg",
     description: "Vacuum insulated, non-toxic stainless steel & ceramic lining.",
@@ -30,7 +30,7 @@ const CURATED_SAMPLE_PRODUCTS = [
   {
     _id: "demo-2",
     name: "Non-toxic cookware for sustainable cooking.",
-    price: 78.35,
+    price: 2499,
     brand: "New",
     image: "/images/kitchen_hero.jpg",
     description: "Naturally non-stick mineral ceramic coating free of PTFE and PFOA.",
@@ -38,7 +38,7 @@ const CURATED_SAMPLE_PRODUCTS = [
   {
     _id: "demo-3",
     name: "Kettle & Toaster eco-friendly meals.",
-    price: 143.65,
+    price: 4299,
     brand: "Customer favorite",
     image: "/images/auth_lifestyle.jpg",
     description: "Energy efficient rapid boil with brushed sage ceramic finish.",
@@ -46,7 +46,7 @@ const CURATED_SAMPLE_PRODUCTS = [
   {
     _id: "demo-4",
     name: "Bamboo Made Utensil Holder with Spoons",
-    price: 26.27,
+    price: 799,
     brand: "New",
     image: "/images/cookware_showcase.jpg",
     description: "Organically grown FSC-certified bamboo spoons and countertop crock.",
@@ -146,6 +146,16 @@ const Home = () => {
   const [email, setEmail] = useState("");
   const [subscribed, setSubscribed] = useState(false);
 
+  const bestsellersRef = useRef(null);
+  const categoriesRef = useRef(null);
+  const galleryRef = useRef(null);
+
+  const scroll = (ref, offset) => {
+    if (ref.current) {
+      ref.current.scrollBy({ left: offset, behavior: "smooth" });
+    }
+  };
+
   const productsToDisplay =
     data?.products && data.products.length > 0
       ? data.products
@@ -223,7 +233,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* 2. BESTSELLING PRODUCTS SECTION (With carousel arrows) */}
+      {/* 2. BESTSELLING PRODUCTS SECTION (With working carousel arrows) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8 gap-4">
           <div>
@@ -246,13 +256,17 @@ const Home = () => {
 
             <div className="hidden sm:flex items-center space-x-2">
               <button
-                className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs"
+                type="button"
+                onClick={() => scroll(bestsellersRef, -320)}
+                className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
                 title="Previous"
               >
                 <FaChevronLeft />
               </button>
               <button
-                className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs"
+                type="button"
+                onClick={() => scroll(bestsellersRef, 320)}
+                className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
                 title="Next"
               >
                 <FaChevronRight />
@@ -266,9 +280,17 @@ const Home = () => {
             <Loader />
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div
+            ref={bestsellersRef}
+            className="flex overflow-x-auto scroll-smooth scrollbar-none gap-6 pb-4 snap-x"
+          >
             {productsToDisplay.map((product) => (
-              <ProductCard key={product._id} p={product} />
+              <div
+                key={product._id}
+                className="min-w-[260px] sm:min-w-[280px] lg:min-w-[290px] max-w-[320px] snap-start flex-shrink-0"
+              >
+                <ProductCard p={product} />
+              </div>
             ))}
           </div>
         )}
@@ -338,21 +360,34 @@ const Home = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <button className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs">
+            <button
+              type="button"
+              onClick={() => scroll(categoriesRef, -280)}
+              className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
+              title="Previous"
+            >
               <FaChevronLeft />
             </button>
-            <button className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs">
+            <button
+              type="button"
+              onClick={() => scroll(categoriesRef, 280)}
+              className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
+              title="Next"
+            >
               <FaChevronRight />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+        <div
+          ref={categoriesRef}
+          className="flex overflow-x-auto md:grid md:grid-cols-4 scroll-smooth scrollbar-none gap-4 sm:gap-6 pb-2 snap-x"
+        >
           {CATEGORY_CARDS.map((cat) => (
             <Link
               key={cat.id}
               to="/shop"
-              className="group relative rounded-3xl overflow-hidden aspect-[3/4] p-5 flex flex-col justify-end border border-white/10 shadow-lg hover:shadow-2xl hover:border-emerald-500/40 transition-all duration-300"
+              className="min-w-[240px] md:min-w-0 snap-start flex-shrink-0 group relative rounded-3xl overflow-hidden aspect-[3/4] p-5 flex flex-col justify-end border border-white/10 shadow-lg hover:shadow-2xl hover:border-emerald-500/40 transition-all duration-300"
             >
               <img
                 src={cat.img}
@@ -414,7 +449,7 @@ const Home = () => {
               <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
               <div className="absolute bottom-4 left-4 right-4 glass-panel p-3.5 rounded-2xl border border-white/10 text-xs text-zinc-200 flex justify-between items-center">
                 <span>Mineral Ceramic Dutch Oven Set</span>
-                <span className="font-bold text-emerald-300 font-mono text-sm">$124.00</span>
+                <span className="font-bold text-emerald-300 font-mono text-sm">₹3,999</span>
               </div>
             </div>
           </div>
@@ -422,7 +457,7 @@ const Home = () => {
       </section>
 
       {/* 6. IDEAS & INSPIRATION GALLERY (5 Gallery Cards from Image 2) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="gallery" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-end justify-between mb-8">
           <div>
             <span className="text-xs uppercase font-semibold tracking-wider text-emerald-400 block mb-1">
@@ -434,20 +469,33 @@ const Home = () => {
           </div>
 
           <div className="flex items-center space-x-2">
-            <button className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs">
+            <button
+              type="button"
+              onClick={() => scroll(galleryRef, -260)}
+              className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
+              title="Previous"
+            >
               <FaChevronLeft />
             </button>
-            <button className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs">
+            <button
+              type="button"
+              onClick={() => scroll(galleryRef, 260)}
+              className="w-8 h-8 rounded-full border border-white/10 bg-forest-900/60 flex items-center justify-center text-stone-300 hover:bg-emerald-600 hover:text-white transition-all text-xs active:scale-95"
+              title="Next"
+            >
               <FaChevronRight />
             </button>
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-4">
+        <div
+          ref={galleryRef}
+          className="flex overflow-x-auto lg:grid lg:grid-cols-5 scroll-smooth scrollbar-none gap-4 pb-2 snap-x"
+        >
           {GALLERY_ITEMS.map((item) => (
             <div
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden aspect-square border border-white/10 shadow-lg hover:border-emerald-500/50 transition-all"
+              className="min-w-[200px] lg:min-w-0 snap-start flex-shrink-0 group relative rounded-2xl overflow-hidden aspect-square border border-white/10 shadow-lg hover:border-emerald-500/50 transition-all"
             >
               <img
                 src={item.img}
@@ -602,7 +650,7 @@ const Home = () => {
       </section>
 
       {/* 10. SUSTAINABILITY COMMITMENT PILLARS */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
           <div className="p-6 rounded-3xl bg-[#121c17] border border-white/5 flex items-start space-x-4">
             <FaLeaf className="text-emerald-400 text-2xl mt-1 shrink-0" />

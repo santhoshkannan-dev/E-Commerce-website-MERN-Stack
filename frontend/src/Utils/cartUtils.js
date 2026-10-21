@@ -3,18 +3,18 @@ export const addDecimals = (num) => {
 };
 
 export const updateCart = (state) => {
-  // Calculate the items price
+  // Calculate the items price (in INR ₹)
   state.itemsPrice = addDecimals(
     state.cartItems.reduce((acc, item) => acc + item.price * item.qty, 0)
   );
 
-  // Calculate the shipping price
-  state.shippingPrice = addDecimals(state.itemsPrice > 100 ? 0 : 10);
+  // Free shipping on orders over ₹500, else ₹50
+  state.shippingPrice = addDecimals(state.itemsPrice > 500 ? 0 : 50);
 
-  // Calculate the tax price
-  state.taxPrice = addDecimals(Number((0.15 * state.itemsPrice).toFixed(2)));
+  // 5% GST tax
+  state.taxPrice = addDecimals(Number((0.05 * state.itemsPrice).toFixed(2)));
 
-  // Calculate the total price
+  // Calculate total price
   state.totalPrice = (
     Number(state.itemsPrice) +
     Number(state.shippingPrice) +

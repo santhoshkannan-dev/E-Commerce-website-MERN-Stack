@@ -36,7 +36,7 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
       setProcessingStage("🏦 Contacting simulated merchant gateway...");
       await new Promise((res) => setTimeout(res, 700));
 
-      setProcessingStage("✨ Authorizing payment of $" + order?.totalPrice + "...");
+      setProcessingStage("✨ Authorizing payment of ₹" + Number(order?.totalPrice || 0).toLocaleString("en-IN") + "...");
       await new Promise((res) => setTimeout(res, 600));
 
       setProcessingStage("🎉 Payment Confirmed!");
@@ -223,10 +223,10 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
             type="button"
             disabled={isProcessing || isLoading}
             onClick={() => handleSimulatePayment(`${PRESET_CARDS[selectedPreset].brand} Card`)}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-sm tracking-wide shadow-lg shadow-pink-500/30 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-950 transition-all transform active:scale-[0.99] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
           >
             <FaLock className="text-xs" />
-            <span>Pay $ {order?.totalPrice} with Card</span>
+            <span>Pay ₹{Number(order?.totalPrice || 0).toLocaleString("en-IN")} with Card</span>
           </button>
         </div>
       )}
@@ -277,16 +277,16 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
 
           <div className="bg-zinc-950 p-3 rounded-xl border border-zinc-800 text-xs flex justify-between items-center font-mono">
             <span className="text-zinc-400">UPI ID:</span>
-            <span className="text-pink-400 font-bold">huxnstore@simulator</span>
+            <span className="text-emerald-400 font-bold">homedine@upi</span>
           </div>
 
           <button
             type="button"
             disabled={isProcessing || isLoading}
             onClick={() => handleSimulatePayment("UPI / QR Code")}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-600 hover:to-teal-700 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-500/25 transition-all transform active:scale-[0.99] disabled:opacity-50"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-950 transition-all transform active:scale-[0.99] disabled:opacity-50"
           >
-            Simulate QR Code Scan ($ {order?.totalPrice})
+            Simulate QR Code Scan (₹{Number(order?.totalPrice || 0).toLocaleString("en-IN")})
           </button>
         </div>
       )}
@@ -294,7 +294,7 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
       {/* TAB 3: 1-CLICK INSTANT PAY */}
       {activeTab === "instant" && (
         <div className="py-4 space-y-4 text-center">
-          <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-pink-500 to-purple-600 flex items-center justify-center text-white text-2xl shadow-xl shadow-pink-500/30">
+          <div className="w-16 h-16 mx-auto rounded-full bg-gradient-to-tr from-emerald-600 to-teal-600 flex items-center justify-center text-white text-2xl shadow-xl shadow-emerald-950">
             <FaBolt />
           </div>
 
@@ -308,7 +308,7 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
           <div className="bg-zinc-950/80 p-4 rounded-xl border border-zinc-800 text-left text-xs space-y-2">
             <div className="flex justify-between text-zinc-400">
               <span>Order Amount:</span>
-              <span className="text-white font-bold">$ {order?.totalPrice}</span>
+              <span className="text-emerald-300 font-bold font-mono">₹{Number(order?.totalPrice || 0).toLocaleString("en-IN")}</span>
             </div>
             <div className="flex justify-between text-zinc-400">
               <span>Customer:</span>
@@ -324,10 +324,10 @@ const DummyPayment = ({ order, onPaySuccess, isLoading }) => {
             type="button"
             disabled={isProcessing || isLoading}
             onClick={() => handleSimulatePayment("1-Click Instant Pay")}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-pink-500 via-rose-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 text-white font-bold text-sm tracking-wide shadow-lg shadow-pink-500/30 transition-all transform active:scale-[0.99] disabled:opacity-50 flex items-center justify-center space-x-2"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm tracking-wide shadow-lg shadow-emerald-950 transition-all transform active:scale-[0.99] disabled:opacity-50 flex items-center justify-center space-x-2"
           >
             <FaBolt className="text-yellow-300" />
-            <span>Instant Pay ($ {order?.totalPrice})</span>
+            <span>Instant Pay (₹{Number(order?.totalPrice || 0).toLocaleString("en-IN")})</span>
           </button>
         </div>
       )}

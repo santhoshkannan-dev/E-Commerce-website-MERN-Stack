@@ -24,7 +24,7 @@ const SmallProduct = ({ product }) => {
           </Link>
           <div className="mt-2 flex items-center justify-between">
             <span className="font-mono text-sm font-bold text-emerald-400">
-              ${Number(product.price).toFixed(2)}
+              ₹{Math.round(product.price || 0).toLocaleString('en-IN')}
             </span>
             <Link
               to={`/product/${product._id}`}

@@ -105,8 +105,8 @@ const Cart = () => {
                     </select>
                   </div>
 
-                  <div className="text-right font-mono font-bold text-white text-sm min-w-[70px]">
-                    ${(item.qty * item.price).toFixed(2)}
+                  <div className="text-right font-mono font-bold text-emerald-300 text-sm min-w-[70px]">
+                    ₹{Number(item.qty * item.price).toLocaleString("en-IN")}
                   </div>
 
                   <button
@@ -132,19 +132,19 @@ const Cart = () => {
               <div className="space-y-3 text-xs text-zinc-300">
                 <div className="flex justify-between">
                   <span>Subtotal</span>
-                  <span className="font-mono font-semibold text-white">${totalPrice}</span>
+                  <span className="font-mono font-semibold text-white">₹{Number(totalPrice).toLocaleString("en-IN")}</span>
                 </div>
                 <div className="flex justify-between">
                   <span>Carbon-Neutral Shipping</span>
-                  <span className="text-emerald-400 font-semibold">FREE</span>
+                  <span className="text-emerald-400 font-semibold">FREE (Over ₹500)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span>Estimated Tax</span>
-                  <span className="text-zinc-400">Calculated at checkout</span>
+                  <span>Estimated GST (5%)</span>
+                  <span className="text-zinc-400">Included at checkout</span>
                 </div>
                 <div className="pt-3 border-t border-white/10 flex justify-between text-sm font-bold text-white">
                   <span>Estimated Total</span>
-                  <span className="font-mono text-emerald-300 text-lg">${totalPrice}</span>
+                  <span className="font-mono text-emerald-300 text-lg">₹{Number(totalPrice).toLocaleString("en-IN")}</span>
                 </div>
               </div>
 

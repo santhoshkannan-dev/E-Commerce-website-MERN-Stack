@@ -86,14 +86,16 @@ const Navigation = () => {
             <Link
               to="/shop"
               className={`hover:text-emerald-400 transition-colors ${
-                location.pathname === "/shop" ? "text-emerald-400 font-semibold" : ""
+                location.pathname === "/shop" && !location.search ? "text-emerald-400 font-semibold" : ""
               }`}
             >
               Shop
             </Link>
             <Link
               to="/shop?filter=bestseller"
-              className="hover:text-emerald-400 transition-colors"
+              className={`hover:text-emerald-400 transition-colors ${
+                location.search.includes("bestseller") ? "text-emerald-400 font-semibold" : ""
+              }`}
             >
               Bestsellers
             </Link>
@@ -104,8 +106,10 @@ const Navigation = () => {
               Gallery
             </Link>
             <Link
-              to="/#about"
-              className="hover:text-emerald-400 transition-colors"
+              to="/about"
+              className={`hover:text-emerald-400 transition-colors ${
+                location.pathname === "/about" ? "text-emerald-400 font-semibold" : ""
+              }`}
             >
               About
             </Link>
@@ -165,6 +169,17 @@ const Navigation = () => {
                 </span>
               )}
             </Link>
+
+            {/* Quick Admin Portal Button */}
+            {userInfo?.isAdmin && (
+              <Link
+                to="/admin/dashboard"
+                className="hidden sm:inline-flex items-center space-x-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-950/90 text-emerald-300 border border-emerald-700/60 hover:bg-emerald-800 hover:text-white transition-all shadow-sm shadow-emerald-950"
+              >
+                <HiOutlineViewGrid className="text-sm" />
+                <span>Admin</span>
+              </Link>
+            )}
 
             {/* User Account / Profile Dropdown */}
             {userInfo ? (
@@ -320,12 +335,26 @@ const Navigation = () => {
               >
                 Bestsellers
               </Link>
+              <Link to="/about" className="px-2 py-1.5 rounded hover:bg-zinc-800">
+                About Our Story
+              </Link>
+              <Link to="/#gallery" className="px-2 py-1.5 rounded hover:bg-zinc-800">
+                Inspiration Gallery
+              </Link>
               <Link to="/favorite" className="px-2 py-1.5 rounded hover:bg-zinc-800">
                 Favorites ({favCount})
               </Link>
               <Link to="/cart" className="px-2 py-1.5 rounded hover:bg-zinc-800">
                 Cart ({cartCount})
               </Link>
+              {userInfo?.isAdmin && (
+                <Link
+                  to="/admin/dashboard"
+                  className="px-2 py-1.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-800/60 font-semibold"
+                >
+                  ⚡ Admin Dashboard
+                </Link>
+              )}
             </nav>
           </div>
         )}

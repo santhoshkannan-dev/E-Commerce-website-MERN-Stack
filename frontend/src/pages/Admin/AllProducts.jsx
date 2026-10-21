@@ -79,7 +79,7 @@ const AllProducts = () => {
                         {product.name}
                       </h3>
                       <span className="font-mono text-base font-bold text-emerald-400 whitespace-nowrap">
-                        ${Number(product.price).toFixed(2)}
+                        ₹{Math.round(product.price || 0).toLocaleString('en-IN')}
                       </span>
                     </div>
 

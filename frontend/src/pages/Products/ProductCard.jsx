@@ -15,6 +15,10 @@ const ProductCard = ({ p, badge = "Customer favorite" }) => {
     toast.success(`${product.name} added to cart!`);
   };
 
+  const formattedPrice = typeof p?.price === "number"
+    ? `₹${p.price.toLocaleString("en-IN")}`
+    : `₹${p?.price || 0}`;
+
   return (
     <div className="group relative rounded-2xl bg-[#141b18] border border-white/5 hover:border-emerald-500/40 p-4 transition-all duration-300 flex flex-col justify-between hover:shadow-xl hover:shadow-black/40">
       <div>
@@ -54,8 +58,8 @@ const ProductCard = ({ p, badge = "Customer favorite" }) => {
 
       {/* Bottom Price & Add to Cart button */}
       <div className="flex items-center justify-between mt-4 pt-3 border-t border-white/5">
-        <span className="text-base font-bold text-white font-mono">
-          ${typeof p?.price === "number" ? p.price.toFixed(2) : p?.price}
+        <span className="text-base font-bold text-emerald-300 font-mono">
+          {formattedPrice}
         </span>
 
         <button
@@ -64,7 +68,7 @@ const ProductCard = ({ p, badge = "Customer favorite" }) => {
           className="inline-flex items-center space-x-1.5 text-xs font-bold text-white bg-emerald-700 hover:bg-emerald-600 px-3.5 py-1.5 rounded-full transition-all shadow-sm shadow-emerald-950 hover:shadow-emerald-900/50 active:scale-95"
         >
           <AiOutlinePlus className="text-xs" />
-          <span>Cart</span>
+          <span>+ Cart</span>
         </button>
       </div>
     </div>
