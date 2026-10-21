@@ -4,13 +4,18 @@
 
 @layer base {
   body {
-    @apply bg-[#0c1210] text-[#f4f4f0] font-sans antialiased selection:bg-forest-500 selection:text-white;
+    @apply bg-[#0c1210] text-[#f4f4f0] font-sans antialiased;
     min-height: 100vh;
   }
 
   h1, h2, h3, .font-editorial {
     font-family: 'Playfair Display', Georgia, serif;
   }
+}
+
+::selection {
+  background-color: #3d8a74;
+  color: #ffffff;
 }
 
 /* Custom aesthetic scrollbar */
